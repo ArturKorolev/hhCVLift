@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HH Resume Lifter</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { width: 420px; min-width: 420px; margin: 0; padding: 0; }
+      body { font-family: Arial, sans-serif; padding: 16px; background: #111; color: #f5f5f5; }
+      h1 { margin: 0 0 12px; font-size: 18px; }
+      label { display: block; margin: 12px 0 6px; font-size: 13px; color: #ccc; }
+      input { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #333; background: #1b1b1b; color: #f5f5f5; }
+      button { width: 100%; margin-top: 10px; padding: 10px; border: none; border-radius: 10px; background: #006cff; color: white; font-size: 14px; cursor: pointer; }
+      button.secondary { background: #444; }
+      .status { margin-top: 14px; padding: 10px; border-radius: 10px; background: #181818; border: 1px solid #333; font-size: 13px; min-height: 52px; white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <h1>HH Resume Lifter</h1>
+    <label for="resumeUrl">Ссылка на резюме hh.ru</label>
+    <input id="resumeUrl" type="url" placeholder="https://hh.ru/resume/12345678" />
+    <button id="startBtn">Включить автоподнятие на 7 дней</button>
+    <button id="checkBtn" class="secondary">Проверить сейчас</button>
+    <button id="stopBtn" class="secondary">Остановить</button>
+    <div class="status" id="status">Статус: ожидание</div>
+    <script src="popup.js"></script>
+  </body>
+</html>

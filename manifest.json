@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "HH Resume Lifter",
+  "version": "1.0.0",
+  "description": "Автообновление резюме hh.ru в браузере в течение 7 дней.",
+  "permissions": ["storage", "alarms", "scripting", "tabs", "notifications"],
+  "host_permissions": ["*://hh.ru/*", "*://*.hh.ru/*"],
+  "action": {
+    "default_title": "HH Resume Lifter",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
