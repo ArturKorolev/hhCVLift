@@ -1,20 +1,28 @@
 {
   "manifest_version": 3,
-  "name": "HH Resume Lifter",
+  "name": "hhCVlift",
   "version": "1.0.0",
-  "description": "Автообновление резюме hh.ru в браузере в течение 7 дней.",
-  "permissions": ["storage", "alarms", "scripting", "tabs", "notifications"],
-  "host_permissions": ["*://hh.ru/*", "*://*.hh.ru/*"],
+  "description": "Автоподнятие резюме на hh.ru",
+  "permissions": ["storage", "alarms", "tabs", "scripting"],
+  "host_permissions": [
+    "*://*.hh.ru/*",
+    "*://hh.ru/*"
+  ],
   "action": {
-    "default_title": "HH Resume Lifter",
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_title": "hhCVlift"
   },
   "background": {
     "service_worker": "background.js"
   },
-  "icons": {
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
-  }
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.hh.ru/applicant/resumes*",
+        "*://hh.ru/applicant/resumes*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
 }

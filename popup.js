@@ -1,65 +1,96 @@
-const resumeUrlInput = document.getElementById('resumeUrl');
-const startBtn = document.getElementById('startBtn');
-const checkBtn = document.getElementById('checkBtn');
-const stopBtn = document.getElementById('stopBtn');
-const statusEl = document.getElementById('status');
+const profileUrlInput = document.getElementById("profileUrl");
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+const liftNowBtn = document.getElementById("liftNowBtn");
+const statusText = document.getElementById("statusText");
+const lastLiftText = document.getElementById("lastLiftText");
+const nextLiftText = document.getElementById("nextLiftText");
+const messageText = document.getElementById("messageText");
 
-async function setStatus(text) {
-  statusEl.textContent = `Статус: ${text}`;
+function formatDateTime(ts) {
+  if (!ts) return "—";
+  return new Date(ts).toLocaleString("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function setMessage(text) {
+  messageText.textContent = text || "";
 }
 
 async function loadState() {
-  const data = await chrome.storage.local.get(['resumeUrl', 'enabled', 'expiresAt']);
-  if (data.resumeUrl) resumeUrlInput.value = data.resumeUrl;
-  if (data.enabled) {
-    const expires = data.expiresAt ? new Date(data.expiresAt).toLocaleString() : 'неизвестно';
-    setStatus(`включено, до ${expires}`);
-  } else {
-    setStatus('выключено');
+  const state = await chrome.runtime.sendMessage({ action: "get-state" });
+  profileUrlInput.value = state.profileUrl || "";
+  renderState(state);
+}
+
+function renderState(state) {
+  const enabled = state.enabled === true;
+
+  statusText.textContent = enabled ? "Активно" : "Остановлено";
+  statusText.className = `value ${enabled ? "active" : "stopped"}`;
+
+  startBtn.disabled = enabled;
+  stopBtn.disabled = !enabled;
+  profileUrlInput.disabled = enabled;
+
+  lastLiftText.textContent = formatDateTime(state.lastLiftAt);
+  nextLiftText.textContent = enabled ? formatDateTime(state.nextLiftAt) : "—";
+
+  if (state.lastMessage) {
+    const clicked =
+      typeof state.lastClicked === "number" && state.lastClicked > 0
+        ? ` (${state.lastClicked} резюме)`
+        : "";
+    setMessage(`${state.lastMessage}${clicked}`);
   }
 }
 
-function isUrlValid(url) {
-  try {
-    const parsed = new URL(url);
-    return parsed.hostname.endsWith('hh.ru') && /(resume\/\d+|resume)/.test(parsed.pathname);
-  } catch {
-    return false;
-  }
-}
+startBtn.addEventListener("click", async () => {
+  const profileUrl = profileUrlInput.value.trim();
+  setMessage("Запускаем...");
 
-async function startLifting() {
-  const resumeUrl = resumeUrlInput.value.trim();
-  if (!resumeUrl || !isUrlValid(resumeUrl)) {
-    setStatus('вставьте корректную ссылку на резюме hh.ru');
+  const response = await chrome.runtime.sendMessage({
+    action: "start",
+    profileUrl,
+  });
+
+  if (!response?.ok) {
+    setMessage(response?.message || "Не удалось запустить");
     return;
   }
 
-  const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000;
-  await chrome.storage.local.set({ resumeUrl, enabled: true, startedAt: Date.now(), expiresAt });
-  await chrome.runtime.sendMessage({ action: 'start', resumeUrl, expiresAt });
-  setStatus(`включено, до ${new Date(expiresAt).toLocaleString()}`);
-}
+  await loadState();
+  setMessage("Автопродление запущено. Первая попытка выполняется...");
+});
 
-async function stopLifting() {
-  await chrome.storage.local.set({ enabled: false });
-  await chrome.runtime.sendMessage({ action: 'stop' });
-  setStatus('выключено');
-}
+stopBtn.addEventListener("click", async () => {
+  await chrome.runtime.sendMessage({ action: "stop" });
+  await loadState();
+  setMessage("Автопродление остановлено");
+});
 
-async function checkNow() {
-  const resumeUrl = resumeUrlInput.value.trim();
-  if (!resumeUrl || !isUrlValid(resumeUrl)) {
-    setStatus('вставьте корректную ссылку на резюме hh.ru');
+liftNowBtn.addEventListener("click", async () => {
+  const profileUrl = profileUrlInput.value.trim();
+  if (!profileUrl) {
+    setMessage("Укажите ссылку на страницу резюме");
     return;
   }
 
-  await chrome.storage.local.set({ resumeUrl });
-  await chrome.runtime.sendMessage({ action: 'liftNow', resumeUrl });
-  setStatus('отправлен запрос на проверку сейчас');
-}
+  setMessage("Пробуем поднять резюме...");
 
-startBtn.addEventListener('click', startLifting);
-checkBtn.addEventListener('click', checkNow);
-stopBtn.addEventListener('click', stopLifting);
+  const result = await chrome.runtime.sendMessage({
+    action: "lift-now",
+    profileUrl,
+  });
+  await loadState();
+
+  if (result?.message) {
+    setMessage(result.message);
+  }
+});
+
 loadState();
