@@ -3,6 +3,11 @@
   "name": "hhCVlift",
   "version": "1.0.0",
   "description": "Автоподнятие резюме на hh.ru",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
   "permissions": ["storage", "alarms", "tabs", "scripting"],
   "host_permissions": [
     "*://*.hh.ru/*",
@@ -10,7 +15,12 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "hhCVlift"
+    "default_title": "hhCVlift",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
   },
   "background": {
     "service_worker": "background.js"
