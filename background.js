@@ -191,11 +191,6 @@ chrome.runtime.onStartup.addListener(async () => {
 });
 
 chrome.runtime.onInstalled.addListener(async () => {
-  const { enabled, profileUrl } = await chrome.storage.local.get(["enabled", "profileUrl"]);
-  if (!profileUrl) {
-    await chrome.storage.local.set({
-      profileUrl: "https://korolev.hh.ru/applicant/resumes",
-    });
-  }
+  const { enabled } = await chrome.storage.local.get(["enabled"]);
   updateBadge(enabled === true);
 });
