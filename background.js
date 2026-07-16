@@ -71,6 +71,15 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 chrome.runtime.onStartup.addListener(async () => {
   await scheduleAlarm();
+  try {
+    const state = await getState();
+    if (state.enabled && state.resumeUrl) {
+      // run one immediate lift check on browser start
+      await performLift();
+    }
+  } catch (e) {
+    console.error('HH Resume Lifter startup check failed:', e);
+  }
 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
